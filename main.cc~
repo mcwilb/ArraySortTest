@@ -11,7 +11,6 @@
 #include <cstdlib>
 #include <ctime>
 #include <sys/time.h>
-#include <fstream>
 
 using namespace std;
 
@@ -47,23 +46,13 @@ int main()
    
     // input all the elements of the array from the
     // cin (I will use redirection from a file for the test)
-    // srand (time(NULL));    //initializes random seed
+    srand (time(NULL));    //initializes random seed
     
-    //randomizeArray(arr, arraySize); // randomly generates numbers to populate.
+    randomizeArray(arr, arraySize); // randomly generates numbers to populate.
                               // Also prints display of array to compare with
-                             // sorted array after.
+                              // sorted array after.
 
-                           
-    ifstream testFile;
-    testFile.open("test500.txt");      // Reading in the test500 file
-    while (!testFile.eof())            // and storing the numbers into array.
-     {
-	for (int k=0; k < arraySize; k++)  // Making sure we don't exceed 
-	  testFile >> arr[k];             // array size that was input by user.
-	
-     }
-    testFile.close();
-    
+         
     // sort the array and time the sorting functions alone (see below);
 
     gettimeofday (&before, 0);
