@@ -17,176 +17,128 @@ using namespace std;
 
 
 /****************  F U N C T I O N  P R O T O T Y P E S  ******************/
-void printArray(int arrayA[], int size);
-void randomizeArray (int arrayA[], int size);
-void quickSort(int arrayA[], int first, int last);
-
+void printArray(int a[], int size);
+void randomizeArray (int a[], int size);
+void quickSort(int a[], int first, int last);
+bool isSorted(int a[], int size);
 
 /************************  M A I N   F U N C T I O N  **********************/
 
 int main()
 {
-
+    //initialize variables
     int arraySize;
     struct timeval before, after;
     double timing;
 
-    // ask the user for the size of the array
-
+    //ask the user for the size of the array
     cout << "Please enter the size of the array." << endl;
-
     cin >> arraySize;
 
-    // allocate a dynamic array of the appropriate size
-
-    int* arr = NULL;  // Pointer to an int, initialized to NULL.
-
-    arr = new int[arraySize];   // Dynamic array allocation use arraySize input
-                                // by user.
+    //allocate a dynamic array of the appropriate size
+    int* arr=NULL;
+    arr = new int[arraySize];
    
-    // input all the elements of the array from the
-    // cin (I will use redirection from a file for the test)
-    srand (time(NULL));    //initializes random seed
+    //input all the elements of the array from the
+    //cin (I will use redirection from a file for the test)
+    //inputArray(arr, arraySize);
+
+    srand (time(NULL));                              //initializes random seed
+    randomizeArray(arr, arraySize);                  //randomly generates numbers to populate
+    gettimeofday (&before, 0);                       //set beginning time
     
-    randomizeArray(arr, arraySize); // randomly generates numbers to populate.
-                              // Also prints display of array to compare with
-                              // sorted array after.
-
-         
-    // sort the array and time the sorting functions alone (see below);
-
-    gettimeofday (&before, 0);
- 
+    //sort array
     quickSort(arr, 0, arraySize-1);
     
-    gettimeofday (&after, 0);
+    gettimeofday (&after, 0);                        //set ending time
     timing = (double) ((double)after.tv_sec +
              (double)after.tv_usec/(1000*1000)) -
              (double) ((double)before.tv_sec +
-             (double)before.tv_usec/(1000*1000));
-    // output the sorted array;
+	     (double)before.tv_usec/(1000*1000));    //calculate total time
+
+    //output the sorted array;
     cout << endl;
+    cout << "Here is the sorted array: " << endl;
     printArray(arr, arraySize);
 
-    // output the timing information.
-    cout << endl;
-    cout << "The timing for the sorted array is: " << timing << " ." << endl;
+    //test if the array is sorted, just in case
+    cout << "\n" << "\n";
+    if (isSorted(arr, arraySize))
+        cout << "Sorted." << endl;
+    else
+        cout << "Not sorted." << endl;
+
+    //output the timing information.
+    cout << "\n" << "\n";
+    cout << "It took " << timing << " seconds to sort the array." << endl;
 
     delete []arr;
     arr=NULL;
-    return 0; // Indicate normal termination.
-} // main()
+    return 0;
+}//main()
 
 
 
 
 /***************** A D D I T I O N A L  F U N C T I O N S ********************/
-void printArray(int arrayA[], int size)
+void printArray(int a[], int size)
 {
-    cout << endl;
-    cout << "Here is the sorted array: " << endl;
-
     for (int i = 0; i<size; ++i)
     {
-      cout << arrayA[i] << ", ";
-      
+      cout << a[i] << ", ";                          //print element
     }
-}// print()
+}//printArray()
 
 
 
-/**************** Using a randomize function to generate numbers to fill array 
-                  for testing purposes*********************************/
-void randomizeArray (int arrayA[], int size)
+//Using a randomize function to generate numbers to fill array
+void randomizeArray (int a[], int size)
 {
     srand((unsigned)time(0));
 
+    //Using RAND_MAX, a constant in cstdlib guaranteed to be at
+    //least32767 for generating random numbers. 
     for (int i=0; i<size; ++i)
-      // Using RAND_MAX, a constant in cstdlib guaranteed at to be at least
-      // 32767 for generating random numbers. 
-      arrayA[i]=(rand()%RAND_MAX);   
-
-
-    /*Printing merely to compare with sorted array after tests run*/
-    cout << "Here is a randomly generated integer array based upon size entered by user: " << endl;
-
-    for (int i = 0; i<size; ++i)
-    {
-      cout << arrayA[i] << ", ";
-      
-    }
-    
+        a[i]=(rand()%RAND_MAX);   
 }//randomizeArray()
 
 
 //Quick Sort has average complexity best case O(n log2 n) and worst case
 // is O(n^2).
-void quickSort(int arrayA[], int first, int last)
+void quickSort(int a[], int first, int last)
 {
-
-  //The following is the code from the 'notes' file
-
-
-     if (last <= first)   //base case arrays <= 1 in length are sorted
-      return;
-
-     int i = first + 1, j = last;     // Initialize search subscripts.
-     while (arrayA[i]<arrayA[first] && i<= j)   // Move i to the right until
-       ++i;                        // finding an object at least as large
-                                   // as a[first].
-
-     while (arrayA[j]>arrayA[first])         // Move j to the left until finding
-       --j;                 // an object at least as small as a[first].
-
-     while(i < j)
-     {
-       swap (arrayA[i], arrayA[j]);  // Move the large object to the right part
-	                    // of the array and the small to the left.
-	do                       // Resume search for object at
-	  ++i;                   // least as large as a[first].
-	while (arrayA[i] < arrayA[first]); 
-
-	do                       // Resume search for object at
-	  --j;                  // least as small as a[first].
-        while (arrayA[j] > arrayA[first]);
-    }
-	   
-    swap (arrayA[first], arrayA[j]);  // Place the partitioning object between
-	                            // objects less than or equal to it
-	                            // and objects greater than or equal to it.
-    quickSort (arrayA, first, j-1);
-    quickSort (arrayA, j+1, last);
- 
-
-  
-  /* This is the code used in the slides
-    if (last <= first)   //base case arrays <= 1 in length are sorted
-      return;
-  
-    int pivot = arrayA[first];
-    int i = first+1, j = last;
-
-    while (i < j)
+    if (last <= first)                       //check if size is larger than zero
+        return;
+    int pivot = a[first];
+    int i = first + 1, j = last;             //Initialize traversing variables
+     
+    while (i < j)                            //loop until index i and j converge
     {
-      while (arrayA[i] < pivot && i<j)
-	i++;
-       while (arrayA[j] > pivot)
-	 j--;
-	 if (i < j)
-	   swap(arrayA[i++], arrayA[j--]);
+         while (a[i] < pivot && i<j)
+	     i++;                     // finding an object at least as large
+         while (a[j] > pivot)             // as a[first].
+             j--;
+         if (i < j)
+	   swap(a[i++], a[j--]);
     }
-    if (arrayA[j] > pivot)
-      
-	j--;
-        swap(arrayA[j], arrayA[first]);
-      
-    quickSort(arrayA, first, j-1);
-    quickSort(arrayA, j+1, last);
-  */
 
+    if (a[j] > pivot)
+        j--;
+    swap (a[j], a[first]);
+    quickSort(a, first, j-1);
+    quickSort(a, j+1, last);
 }// quickSort()
 
-   
+bool isSorted(int a[],int size)
+{
+    for (int i=0; i<size-1; i++)
+    {
+        if (a[i] > a[i+1])
+            return false;
+    }
+    return true;
+}
+
 /*Including the code for Binary Insertion Sort just in case.
   Will need to add to prototypes if decide to use it!
  
