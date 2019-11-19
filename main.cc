@@ -23,8 +23,10 @@ void randomizeArray (int a[], int size);
 void quickSort(int a[], int first, int last);
 void partitionForMedianPivot(int a[], int l, int r, int &i, int &j);
 void medianPartitionQuickSort(int a[], int l, int r);
-
-
+void radixSort(int a[], int n);
+void countSort(int a[], int n, int exp);
+void isSorted(int a[], int size);
+int max(int a[], int n);
 /************************  M A I N   F U N C T I O N  **********************/
 
 int main()
@@ -32,63 +34,127 @@ int main()
 
     int arraySize;
     struct timeval before, after;
-    double timing;
+    double timing, timingQuick, timingMedian, timingRadix;
 
     // ask the user for the size of the array
-
     cout << "Please enter the size of the array." << endl;
-
     cin >> arraySize;
 
     // allocate a dynamic array of the appropriate size
-
-    int* arr = NULL;  // Pointer to an int, initialized to NULL.
+    int* arr = NULL;            // Pointer to an int, initialized to NULL.
+    int* arr2 = NULL;
+    int* arr3 = NULL;
 
     arr = new int[arraySize];   // Dynamic array allocation use arraySize input
-                                // by user.
-   
+    arr2 = new int[arraySize];  // by user
+    arr3 = new int[arraySize];
+    
     // input all the elements of the array from the
     // cin (I will use redirection from a file for the test)
+    //for (int i=0; i<arraySize; i++)
+    //    cin >> a[i];
 
-     srand (time(NULL));    //initializes random seed
-    
-    randomizeArray(arr, arraySize); // randomly generates numbers to populate.
-                              // Also prints display of array to compare with
-                             // sorted array after.
-
+    srand (time(NULL));              // initializes random seed
+    randomizeArray(arr, arraySize);  // randomly generates numbers to populate
+    arr2 = arr;
+    arr3 = arr;
+        
     /*                            
     ifstream testFile;
-    testFile.open("test500.txt");      // Reading in the test500 file
-    while (!testFile.eof())            // and storing the numbers into array.
+    testFile.open("test500.txt");         // Reading in the test500 file
+    while (!testFile.eof())               // and storing the numbers into array
      {
-	for (int k=0; k < arraySize; k++)  // Making sure we don't exceed 
+	for (int k=0; k < arraySize; k++) // Making sure we don't exceed 
 	  testFile >> arr[k];             // array size that was input by user.
 	
      }
     testFile.close();
     */
-    // sort the array and time the sorting functions alone (see below);
-
+    
+    // quicksort the array and time the sorting functions alone (see below);
     gettimeofday (&before, 0);
- 
+
     quickSort(arr, 0, arraySize-1);
     // medianPartitionQuickSort(arr, 0, arraySize-1);
     
+    gettimeofday (&after, 0);
+
+    timing = (double) ((double)after.tv_sec +
+             (double)after.tv_usec/(1000*1000)) -
+             (double) ((double)before.tv_sec +
+             (double)before.tv_usec/(1000*1000));
+    timingQuick = timing;
+
+    // output the sorted array;
+    //cout << endl;
+    //printArray(arr, arraySize);
+
+    // output the timing information.
+    cout << endl;
+    isSorted(arr, arraySize);
+    cout << endl;
+    cout << "The timing for the quicksorted array is: " 
+         << timing << " ." << endl;
+
+    
+    // medianpartitionquicksort and time
+    gettimeofday (&before, 0);
+    medianPartitionQuickSort(arr2, 0 ,arraySize-1);
     gettimeofday (&after, 0);
     timing = (double) ((double)after.tv_sec +
              (double)after.tv_usec/(1000*1000)) -
              (double) ((double)before.tv_sec +
              (double)before.tv_usec/(1000*1000));
+    timingMedian = timing;
+
     // output the sorted array;
-    cout << endl;
-    printArray(arr, arraySize);
+    //cout << endl;
+    //printArray(arr, arraySize);
 
     // output the timing information.
     cout << endl;
-    cout << "The timing for the sorted array is: " << timing << " ." << endl;
+    isSorted(arr2, arraySize);
+    cout << endl;
+    cout << "The timing for the medianpartitionquicksorted array is: " 
+         << timing << " ." << endl;
 
-    delete []arr;
-    arr=NULL;
+    
+
+    // radixsort and time
+    gettimeofday (&before, 0);
+    radixSort(arr3, arraySize);
+    gettimeofday (&after, 0);
+    timing = (double) ((double)after.tv_sec +
+             (double)after.tv_usec/(1000*1000)) -
+             (double) ((double)before.tv_sec +
+             (double)before.tv_usec/(1000*1000));
+    timingRadix = timing;
+
+    // output the sorted array;
+    //cout << endl;
+    //printArray(arr, arraySize);
+
+    // output the timing information.
+    cout << endl;
+    isSorted(arr3, arraySize);
+    cout << endl;
+    cout << "The timing for the radixsorted array is: " 
+         << timing << " ." << endl;
+
+    //Determine fastest sort method
+    if (timingQuick < timingMedian && timingQuick < timingRadix)
+        cout << "The quicksort was the quickest." << endl;
+    else if (timingMedian < timingRadix)
+        cout << "The mediansort was the quickest." << endl;
+    else
+        cout << "The radixsort was the quickest." << endl;
+
+    //delete []arr;
+    //delete []arr2;
+    //delete []arr3;
+    arr = NULL;
+    arr2 = NULL;
+    arr3 = NULL;
     return 0; // Indicate normal termination.
 } // main()
 
@@ -96,73 +162,50 @@ int main()
 
 
 /***************** A D D I T I O N A L  F U N C T I O N S ********************/
+// prints array
 void printArray(int a[], int size)
 {
-    cout << endl;
-    cout << "Here is the sorted array: " << endl;
-
     for (int i = 0; i<size; ++i)
-    {
-      cout << a[i] << ", ";
-      
-    }
+        cout << a[i] << ", ";
 }// print()
 
 
-
-/**************** Using a randomize function to generate numbers to fill array 
-                  for testing purposes*********************************/
+// use a random number generators to fill array
 void randomizeArray (int a[], int size)
 {
     srand((unsigned)time(0));
 
     for (int i=0; i<size; ++i)
-      // Using RAND_MAX, a constant in cstdlib guaranteed at to be at least
-      // 32767 for generating random numbers. 
-      a[i]=(rand()%RAND_MAX);   
+        // Using RAND_MAX, a constant in cstdlib guaranteed at to be at least
+        // 32767 for generating random numbers. 
+        a[i]=(rand()%RAND_MAX);   
+}// randomizeArray()
 
 
-    /*Printing merely to compare with sorted array after tests run*/
-    cout << "Here is a randomly generated integer array based upon size entered by user: " << endl;
-
-    for (int i = 0; i<size; ++i)
-    {
-      cout << a[i] << ", ";
-      
-    }
-    
-}//randomizeArray()
-
-
-//Quick Sort has average complexity best case O(n log2 n) and worst case
-// is O(n^2).
+// Quick Sort has average complexity best case O(n log2 n)
+// and worst case is O(n^2).
 void quickSort(int a[], int first, int last)
 {
-  //This is the code used in the slides
-
-    if (last <= first)   //base case arrays <= 1 in length are sorted
-      return;
+    if (last <= first)           //base case arrays <= 1 in length are sorted
+        return;
   
     int pivot = a[first];
     int i = first+1, j = last;
 
     while (i < j)
     {
-      while (a[i] < pivot && i<j)
-	i++;
-       while (a[j] > pivot)
-	 j--;
-	 if (i < j)
-	   swap(a[i++], a[j--]);
+        while (a[i] < pivot && i<j)
+	    i++;
+        while (a[j] > pivot)
+	    j--;
+        if (i < j)
+	    swap(a[i++], a[j--]);
     }
     if (a[j] > pivot)
-      
 	j--;
-        swap(a[j], a[first]);
-      
+    swap(a[j], a[first]);  
     quickSort(a, first, j-1);
     quickSort(a, j+1, last);
-
 }// quickSort()
 
 void partitionForMedianPivot(int a[], int l, int r, int &i, int &j) 
@@ -242,6 +285,55 @@ void medianPartitionQuickSort(int a[], int l, int r)
     medianPartitionQuickSort(a, l, j); 
     medianPartitionQuickSort(a, i, r); 
 } 
+
+void radixSort(int a[], int n)
+{
+    int m = max(a, n);
+    for (int exp = 1; m/exp > 0; exp *= 10)
+        countSort(a, n, exp);
+    return;
+}// radixSort()
+
+void countSort(int a[], int n, int exp)
+{
+    int output[n];
+    int i, count[10] = {0};
+
+    for (i = 0; i<n; i++)
+        count[(a[i]/exp)%10]++;
+    for (i = 1; i<10; i++)
+        count[i] += count[i-1];
+    for (i = n-1; i >= 0; i--)
+    {
+        output[count[(a[i]/exp)%10]-1] = a[i];
+        count[(a[i]/exp)%10]--;
+    }
+    for (i = 0; i<n; i++)
+        a[i] = output[i];
+    return;
+}// countSort()
+
+void isSorted(int a[], int size)
+{
+    for (int i = 0; i<size-1; i++)
+        if (a[i] > a[i+1])
+        {
+            cout << "The array is not sorted correctly." << endl;
+            return;
+        }
+    cout << "The array is sorted." << endl;
+    return;
+}// isSorted()
+
+int max(int a[], int n)
+{
+    int max = 0;
+    for (int i = 0; i<n; i++)
+        if (a[i] > max)
+            max = a[i];
+    return max;
+}
+
 /*
 Test outputs for timing:
 Below are some speed test outputs using the regular quicksort function
